@@ -69,22 +69,26 @@ When provided with a problem, you MUST adhere strictly to the following executio
           { role: 'user', content: problem }
         ],
         temperature: 0.1,
+        stream: true // Enable streaming to bypass Vercel timeouts
       }),
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('OpenRouter API Error:', errorData);
-      return new Response(JSON.stringify({ error: errorData.error?.message || 'Failed to fetch from OpenRouter' }), {
+      const errorText = await response.text();
+      console.error('OpenRouter API Error:', errorText);
+      return new Response(JSON.stringify({ error: `Failed to fetch from OpenRouter: ${errorText.substring(0, 100)}` }), {
         status: response.status, headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const data = await response.json();
-    const solution = data.choices[0].message.content;
-
-    return new Response(JSON.stringify({ solution }), {
-      status: 200, headers: { 'Content-Type': 'application/json' },
+    // Return the stream directly to the client
+    return new Response(response.body, {
+      status: 200,
+      headers: { 
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+      },
     });
 
   } catch (error) {

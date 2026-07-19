@@ -38,19 +38,56 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ problem })
             });
             
-            const data = await response.json();
+            const contentType = response.headers.get("content-type");
             
-            if (!response.ok) {
+            // Handle regular JSON errors safely
+            if (contentType && contentType.includes("application/json")) {
+                const data = await response.json();
                 throw new Error(data.error || 'Failed to fetch solution');
             }
             
-            const result = data.solution;
-            
-            // Render Markdown
-            const htmlContent = marked.parse(result.trim());
-            outputWindow.innerHTML = htmlContent;
+            // Handle Vercel HTML timeout errors safely
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`Vercel/Server Error: ${text.substring(0, 100)}...`);
+            }
 
-            // Trigger MathJax to re-render equations in the new HTML
+            // Read the Server-Sent Events (SSE) Stream
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let result = '';
+            let buffer = '';
+            
+            outputWindow.innerHTML = '<p class="placeholder-text">Starting derivation...</p>';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop(); // keep the last potentially incomplete line in the buffer
+                
+                for (const line of lines) {
+                    if (line.startsWith('data: ') && !line.includes('[DONE]')) {
+                        try {
+                            const data = JSON.parse(line.slice(6));
+                            const text = data.choices[0].delta?.content || '';
+                            result += text;
+                            
+                            // Render Markdown live with a typing cursor
+                            outputWindow.innerHTML = marked.parse(result + ' ▊');
+                        } catch (e) {
+                            // Silently ignore incomplete JSON chunks
+                        }
+                    }
+                }
+            }
+
+            // Remove cursor and do final render
+            outputWindow.innerHTML = marked.parse(result);
+
+            // Trigger MathJax only AFTER the stream finishes to prevent lag/flickering
             if (window.MathJax) {
                 MathJax.typesetPromise([outputWindow]).catch((err) => console.error('MathJax error:', err));
             }
