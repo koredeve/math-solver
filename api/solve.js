@@ -11,9 +11,10 @@ export default async function handler(request) {
 
   try {
     const body = await request.json();
-    const { problem } = body;
-    if (!problem || typeof problem !== 'string') {
-      return new Response(JSON.stringify({ error: 'Problem statement required' }), {
+    const { problem, image } = body;
+    
+    if (!problem && !image) {
+      return new Response(JSON.stringify({ error: 'Problem or image is required' }), {
         status: 400, headers: { 'Content-Type': 'application/json' },
       });
     }
@@ -56,13 +57,6 @@ When provided with a problem, you MUST adhere strictly to the following executio
 
 **BEGIN PROCESSING.**`;
 
-    const { problem, image } = await request.json();
-
-    if (!problem && !image) {
-      return new Response(JSON.stringify({ error: 'Problem or image is required' }), {
-        status: 400, headers: { 'Content-Type': 'application/json' }
-      });
-    }
 
     const userContent = [];
     if (problem) {
