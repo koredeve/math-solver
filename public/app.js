@@ -7,8 +7,67 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusIndicator = document.getElementById('status-indicator');
     const copyBtn = document.getElementById('copy-btn');
     const demoBtns = document.querySelectorAll('.demo-btn');
+    const imageUpload = document.getElementById('image-upload');
+    const imagePreviewContainer = document.getElementById('image-preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    const removeImageBtn = document.getElementById('remove-image-btn');
 
     let currentResult = ''; // Store the latest result for copying
+    let currentBase64Image = null; // Store compressed image data
+
+    // Image Upload Handling & Compression
+    if (imageUpload) {
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 1200;
+                    const MAX_HEIGHT = 1200;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) {
+                            height *= MAX_WIDTH / width;
+                            width = MAX_WIDTH;
+                        }
+                    } else {
+                        if (height > MAX_HEIGHT) {
+                            width *= MAX_HEIGHT / height;
+                            height = MAX_HEIGHT;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                    
+                    currentBase64Image = compressedDataUrl;
+                    imagePreview.src = compressedDataUrl;
+                    imagePreviewContainer.classList.remove('hidden');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    if (removeImageBtn) {
+        removeImageBtn.addEventListener('click', () => {
+            currentBase64Image = null;
+            imageUpload.value = '';
+            imagePreviewContainer.classList.add('hidden');
+            imagePreview.src = '';
+        });
+    }
 
     // Demo Prompts Library
     const prompts = {
@@ -54,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     solveBtn.addEventListener('click', async () => {
         const problem = problemInput.value.trim();
         
-        if (!problem) {
+        if (!problem && !currentBase64Image) {
             problemInput.style.transform = 'translateX(5px)';
             setTimeout(() => problemInput.style.transform = 'translateX(-5px)', 100);
             setTimeout(() => problemInput.style.transform = 'translateX(0)', 200);
@@ -96,11 +155,11 @@ document.addEventListener('DOMContentLoaded', () => {
         outputWindow.innerHTML = '<p class="placeholder-text">Analyzing logical structure and deriving proof...</p>';
 
         try {
-            // Hit our backend serverless function
+            // Trigger API request
             const response = await fetch('/api/solve', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ problem })
+                body: JSON.stringify({ problem, image: currentBase64Image })
             });
             
             const contentType = response.headers.get("content-type");

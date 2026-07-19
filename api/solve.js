@@ -56,6 +56,25 @@ When provided with a problem, you MUST adhere strictly to the following executio
 
 **BEGIN PROCESSING.**`;
 
+    const { problem, image } = await request.json();
+
+    if (!problem && !image) {
+      return new Response(JSON.stringify({ error: 'Problem or image is required' }), {
+        status: 400, headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    const userContent = [];
+    if (problem) {
+        userContent.push({ type: "text", text: problem });
+    } else if (image) {
+        userContent.push({ type: "text", text: "Please carefully analyze and mathematically solve the problem presented in this image. Proceed step-by-step." });
+    }
+
+    if (image) {
+        userContent.push({ type: "image_url", image_url: { url: image } });
+    }
+
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -66,7 +85,7 @@ When provided with a problem, you MUST adhere strictly to the following executio
         model: 'openrouter/auto-beta',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: problem }
+          { role: 'user', content: userContent }
         ],
         temperature: 0.1,
         stream: true // Enable streaming to bypass Vercel timeouts

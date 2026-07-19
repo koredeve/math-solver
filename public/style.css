@@ -176,6 +176,61 @@ textarea::placeholder {
     border-radius: 1rem;
 }
 
+/* Image Upload Styling */
+.upload-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.75rem;
+}
+
+.upload-btn {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.upload-btn:hover {
+    background: rgba(59, 130, 246, 0.25);
+    color: #bfdbfe;
+}
+
+#image-preview-container {
+    position: relative;
+    display: inline-block;
+}
+
+#image-preview-container.hidden {
+    display: none;
+}
+
+#image-preview {
+    height: 40px;
+    border-radius: 0.25rem;
+    border: 1px solid var(--border-glass);
+    object-fit: cover;
+}
+
+.remove-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Demo Prompts */
 .demo-prompts {
     display: flex;
