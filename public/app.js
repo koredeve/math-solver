@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const decoder = new TextDecoder();
             let result = '';
             let buffer = '';
+            let usedModel = 'OpenRouter'; // Track which model was actually used
             
             outputWindow.innerHTML = '<p class="placeholder-text">Starting derivation...</p>';
 
@@ -72,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (line.startsWith('data: ') && !line.includes('[DONE]')) {
                         try {
                             const data = JSON.parse(line.slice(6));
+                            if (data.model) usedModel = data.model; // Extract the actual model name
                             const text = data.choices[0].delta?.content || '';
                             result += text;
                             
@@ -92,7 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 MathJax.typesetPromise([outputWindow]).catch((err) => console.error('MathJax error:', err));
             }
 
-            statusIndicator.textContent = 'Verified';
+            statusIndicator.textContent = `Verified (${usedModel})`;
+            statusIndicator.title = `Model used: ${usedModel}`;
             statusIndicator.className = 'status-indicator done';
 
         } catch (error) {
