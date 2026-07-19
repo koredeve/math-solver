@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absolute Logic - Math Solver</title>
+    <meta name="description" content="A strict mathematical logic and word problem solver.">
+    <link rel="stylesheet" href="style.css">
+    <!-- Modern Typography: Inter for UI, Fira Code for math/code -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- MathJax for rendering LaTeX math formulas -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="background-effects">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+    </div>
+
+    <main class="app-container">
+        <header class="glass-panel">
+            <h1>Absolute Logic</h1>
+            <p>Rigorous step-by-step mathematical verification and solving engine.</p>
+        </header>
+
+        <section class="input-section glass-panel">
+            <label for="problem-input" class="sr-only">Enter your mathematical problem</label>
+            <textarea id="problem-input" placeholder="Enter your word problem, theorem, or logic puzzle..." rows="5"></textarea>
+            
+            <div class="actions">
+                <button id="solve-btn" class="primary-btn">
+                    <span class="btn-text">Verify & Solve</span>
+                    <span class="spinner hidden" id="loading-spinner"></span>
+                </button>
+            </div>
+        </section>
+
+        <section class="output-section glass-panel">
+            <div class="output-header">
+                <h2>Logical Derivation</h2>
+                <div class="status-indicator" id="status-indicator">Idle</div>
+            </div>
+            <div id="output-window" class="markdown-body">
+                <p class="placeholder-text">Awaiting input. The logical derivation will appear here...</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
