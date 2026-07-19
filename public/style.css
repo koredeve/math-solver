@@ -306,3 +306,47 @@ mjx-container[display="true"] {
     margin-left: 0;
     margin-bottom: 1rem;
 }
+
+/* --- Responsive Design for Mobile Devices --- */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+    .glass-panel {
+        padding: 1.5rem;
+    }
+    header h1 {
+        font-size: 1.75rem;
+    }
+    .primary-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 0.5rem;
+    }
+    .app-container {
+        gap: 1rem;
+    }
+    .glass-panel {
+        padding: 1rem;
+        border-radius: 0.75rem;
+    }
+    header h1 {
+        font-size: 1.5rem;
+    }
+    header p {
+        font-size: 0.875rem;
+    }
+    .output-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    .markdown-body {
+        font-size: 0.95rem;
+    }
+}
