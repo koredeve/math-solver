@@ -40,6 +40,12 @@
             <label for="problem-input" class="sr-only">Enter your mathematical problem</label>
             <textarea id="problem-input" placeholder="Enter your word problem, theorem, or logic puzzle..." rows="5"></textarea>
             
+            <div class="demo-prompts">
+                <button class="demo-btn">River Crossing Puzzle</button>
+                <button class="demo-btn">Calculus Proof</button>
+                <button class="demo-btn">Hardest Logic Riddle</button>
+            </div>
+
             <div class="actions">
                 <button id="solve-btn" class="primary-btn">
                     <span class="btn-text">Verify & Solve</span>
@@ -51,7 +57,10 @@
         <section class="output-section glass-panel">
             <div class="output-header">
                 <h2>Logical Derivation</h2>
-                <div class="status-indicator" id="status-indicator">Idle</div>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <button id="copy-btn" class="demo-btn" style="display: none;">Copy Solution</button>
+                    <div class="status-indicator" id="status-indicator">Idle</div>
+                </div>
             </div>
             <div id="output-window" class="markdown-body">
                 <p class="placeholder-text">Awaiting input. The logical derivation will appear here...</p>

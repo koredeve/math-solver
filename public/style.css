@@ -142,6 +142,30 @@ textarea::placeholder {
     opacity: 0.7;
 }
 
+/* Demo Prompts */
+.demo-prompts {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.demo-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-glass);
+    color: var(--text-secondary);
+    padding: 0.35rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.demo-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--text-primary);
+}
+
 .actions {
     margin-top: 1rem;
     display: flex;
@@ -288,6 +312,27 @@ mjx-container[display="true"] {
     overflow-x: auto;
     margin-bottom: 1rem;
     border: 1px solid var(--border-glass);
+}
+
+.markdown-body table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 0.5rem;
+}
+
+.markdown-body th, .markdown-body td {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-glass);
+    text-align: left;
+}
+
+.markdown-body th {
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
 }
 
 .markdown-body ul, .markdown-body ol {

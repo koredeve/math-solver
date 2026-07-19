@@ -5,6 +5,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const spinner = document.getElementById('loading-spinner');
     const btnText = solveBtn.querySelector('.btn-text');
     const statusIndicator = document.getElementById('status-indicator');
+    const copyBtn = document.getElementById('copy-btn');
+    const demoBtns = document.querySelectorAll('.demo-btn');
+
+    let currentResult = ''; // Store the latest result for copying
+
+    // Demo Prompts Library
+    const prompts = {
+        'River Crossing Puzzle': 'A farmer needs to cross a river with a wolf, a goat, and a box of math books. The boat can only hold the farmer and one item at a time. If left alone, the wolf will eat the goat. The goat cannot be left alone with the math books because it will chew them up. How does the farmer get everything across safely? Formalize the constraints, map out every single trip step-by-step, and mathematically verify that no forbidden states occur at any point.',
+        'Calculus Proof': 'Prove that the derivative of e^x is e^x using the limit definition of a derivative. Be extremely rigorous and cite all algebraic limits.',
+        'Hardest Logic Riddle': 'There are three gods A, B, and C, who are called, in no particular order, True, False, and Random. True always speaks truly, False always speaks falsely, but whether Random speaks truly or falsely is a completely random coin toss. Determine the identities of A, B, and C by asking exactly three yes-no questions.'
+    };
+
+    demoBtns.forEach(btn => {
+        if (prompts[btn.textContent]) {
+            btn.addEventListener('click', () => {
+                problemInput.value = prompts[btn.textContent];
+                // Optional: Automatically click solve when a demo is clicked
+                // solveBtn.click();
+            });
+        }
+    });
+
+    // Copy to Clipboard
+    copyBtn.addEventListener('click', () => {
+        if (!currentResult) return;
+        navigator.clipboard.writeText(currentResult).then(() => {
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => copyBtn.textContent = originalText, 2000);
+        });
+    });
 
     // Configure marked to handle Markdown formatting safely
     marked.setOptions({
@@ -22,11 +53,37 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // --- LOCALSTORAGE SECURITY THROTTLING ---
+        const today = new Date().toISOString().split('T')[0];
+        let usage = JSON.parse(localStorage.getItem('math_solver_usage') || '{"date":"","count":0}');
+        
+        if (usage.date !== today) {
+            usage = { date: today, count: 0 };
+        }
+        
+        if (usage.count >= 3) {
+            outputWindow.innerHTML = `
+                <div class="glass-panel" style="border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.1); padding: 1.5rem;">
+                    <h3 style="color: #ef4444; margin-bottom: 0.5rem; font-weight: 600; font-size: 1.1rem;">Daily demo threshold reached (3/3 queries used).</h3>
+                    <p style="color: var(--text-primary); line-height: 1.5;">To protect API resources, this public link limits requests to 3 per day.</p>
+                </div>
+            `;
+            statusIndicator.textContent = 'Limit Reached';
+            statusIndicator.className = 'status-indicator';
+            return;
+        }
+
+        usage.count += 1;
+        localStorage.setItem('math_solver_usage', JSON.stringify(usage));
+        // ----------------------------------------
+
         solveBtn.disabled = true;
         spinner.classList.remove('hidden');
         btnText.textContent = 'Computing...';
         statusIndicator.textContent = 'Computing';
         statusIndicator.className = 'status-indicator computing';
+        copyBtn.style.display = 'none'; // Hide copy button while computing
+        currentResult = ''; // Reset result buffer
         
         outputWindow.innerHTML = '<p class="placeholder-text">Analyzing logical structure and deriving proof...</p>';
 
@@ -97,6 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
             statusIndicator.textContent = `Verified (${usedModel})`;
             statusIndicator.title = `Model used: ${usedModel}`;
             statusIndicator.className = 'status-indicator done';
+            
+            // Show the copy button now that the stream is finished
+            copyBtn.style.display = 'block';
+            currentResult = result;
 
         } catch (error) {
             outputWindow.innerHTML = `<p style="color: #ef4444;">Error during computation: ${error.message}</p>`;
