@@ -142,6 +142,40 @@ textarea::placeholder {
     opacity: 0.7;
 }
 
+/* Ad Placeholder Styling (Carbon Ads Style) */
+.ad-container {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(15, 23, 42, 0.4);
+}
+
+#carbonads-placeholder {
+    width: 100%;
+    max-width: 350px;
+    border: 1px dashed var(--border-glass);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+    position: relative;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.ad-label {
+    position: absolute;
+    top: -0.65rem;
+    right: 0.75rem;
+    background: var(--bg-base);
+    padding: 0 0.5rem;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    border-radius: 1rem;
+}
+
 /* Demo Prompts */
 .demo-prompts {
     display: flex;

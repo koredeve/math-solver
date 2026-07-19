@@ -27,6 +27,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Enter key to solve (Shift+Enter for new line)
+    problemInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault(); // Prevent default new line
+            solveBtn.click();
+        }
+    });
+
     // Copy to Clipboard
     copyBtn.addEventListener('click', () => {
         if (!currentResult) return;
