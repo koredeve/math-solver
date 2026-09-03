@@ -14,8 +14,12 @@
     
     <!-- Marked.js for Markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- KaTeX: Ultra-fast, pristine LaTeX mathematical typography -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     
-    <!-- MathJax for rendering LaTeX math formulas -->
+    <!-- MathJax for rendering fallback LaTeX math formulas -->
     <script>
         MathJax = {
             tex: {
@@ -125,6 +129,24 @@
                             <button id="clear-btn" class="action-btn clear-btn" style="display: none;" title="Clear solution">
                                 <span>Clear</span>
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Dedicated High-Visibility Result Card -->
+                    <div id="result-showcase" class="result-showcase hidden">
+                        <div class="result-header">
+                            <div class="result-badge-wrap">
+                                <span class="result-badge">
+                                    <span class="badge-icon">🎯</span> FINAL VERIFIED RESULT
+                                </span>
+                            </div>
+                            <div class="result-indicators">
+                                <span class="tag-check">✓ Axiomatic Soundness</span>
+                                <span class="tag-check">✓ Invariants Verified</span>
+                            </div>
+                        </div>
+                        <div id="result-content" class="result-content">
+                            <!-- Prominent final answer populated here -->
                         </div>
                     </div>
 

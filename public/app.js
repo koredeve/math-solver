@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const imagePreview = document.getElementById('image-preview');
     const removeImageBtn = document.getElementById('remove-image-btn');
     const quotaCount = document.getElementById('quota-count');
-    const heroSection = document.getElementById('hero-section');
+    const resultShowcase = document.getElementById('result-showcase');
+    const resultContent = document.getElementById('result-content');
 
     let currentResult = ''; // Store the latest result for copying
     let currentBase64Image = null; // Store compressed image data
@@ -146,6 +147,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
             currentResult = '';
+            if (resultShowcase) resultShowcase.classList.add('hidden');
+            if (resultContent) resultContent.innerHTML = '';
             outputWindow.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-glyph">&int;</div>
@@ -164,6 +167,103 @@ document.addEventListener('DOMContentLoaded', () => {
         breaks: true,
         gfm: true
     });
+
+    // --- Advanced Mathematical Markdown & KaTeX Engine ---
+    function renderMarkdownWithMath(markdownText) {
+        if (!markdownText) return '';
+        
+        const mathBlocks = [];
+        
+        // 1. Extract and protect display math $$...$$
+        let processed = markdownText.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
+            const id = `___MATH_BLOCK_${mathBlocks.length}___`;
+            mathBlocks.push({ id, math: math.trim(), display: true });
+            return `\n\n${id}\n\n`;
+        });
+
+        // 2. Extract and protect display math \[...\]
+        processed = processed.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
+            const id = `___MATH_BLOCK_${mathBlocks.length}___`;
+            mathBlocks.push({ id, math: math.trim(), display: true });
+            return `\n\n${id}\n\n`;
+        });
+
+        // 3. Extract and protect inline math $...$
+        processed = processed.replace(/(?<!\\)\$([^\$\n]+?)(?<!\\)\$/g, (match, math) => {
+            const id = `___MATH_INLINE_${mathBlocks.length}___`;
+            mathBlocks.push({ id, math: math.trim(), display: false });
+            return id;
+        });
+
+        // 4. Extract and protect inline math \(...\)
+        processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
+            const id = `___MATH_INLINE_${mathBlocks.length}___`;
+            mathBlocks.push({ id, math: math.trim(), display: false });
+            return id;
+        });
+
+        // 5. Parse clean markdown without mangling math symbols
+        let html = marked.parse(processed);
+
+        // 6. Substitute protected math with rendered KaTeX formulas
+        for (const item of mathBlocks) {
+            let renderedMath = '';
+            if (window.katex && window.katex.renderToString) {
+                try {
+                    renderedMath = window.katex.renderToString(item.math, {
+                        displayMode: item.display,
+                        throwOnError: false
+                    });
+                } catch (err) {
+                    renderedMath = item.display ? 
+                        `<div class="katex-display">$$${item.math}$$</div>` : 
+                        `<span class="katex">$${item.math}$</span>`;
+                }
+            } else {
+                renderedMath = item.display ? 
+                    `<div class="katex-display">$$${item.math}$$</div>` : 
+                    `<span class="katex">$${item.math}$</span>`;
+            }
+            
+            // Replace placeholder in HTML
+            html = html.split(item.id).join(renderedMath);
+        }
+
+        return html;
+    }
+
+    // --- Extract and Highlight Final Verified Answer ---
+    function extractFinalAnswer(text) {
+        if (!text) return null;
+        
+        // Search for explicit Phase 4 block
+        const phase4Match = text.match(/###\s*PHASE\s*4[^\n]*\n([\s\S]*)/i);
+        if (phase4Match && phase4Match[1]) {
+            let content = phase4Match[1].trim();
+            // Remove trailing rules or notes
+            content = content.replace(/\*\*CRITICAL RULES[\s\S]*/i, '').trim();
+            return content;
+        }
+
+        // Search for explicit FINAL ANSWER / RESULT callouts
+        const finalAnswerMatch = text.match(/(?:>|\*\*|\b)(?:FINAL\s*(?:ANSWER|RESULT|CONCLUSION))\s*:\s*([\s\S]*)/i);
+        if (finalAnswerMatch && finalAnswerMatch[1]) {
+            return finalAnswerMatch[1].trim();
+        }
+
+        return null;
+    }
+
+    function updateResultShowcase(text) {
+        if (!resultShowcase || !resultContent) return;
+        const answer = extractFinalAnswer(text);
+        if (answer) {
+            resultContent.innerHTML = renderMarkdownWithMath(answer);
+            resultShowcase.classList.remove('hidden');
+        } else {
+            resultShowcase.classList.add('hidden');
+        }
+    }
 
     // --- Solver Execution Flow ---
     solveBtn.addEventListener('click', async () => {
@@ -210,6 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statusIndicator.className = 'status-indicator computing';
         if (copyBtn) copyBtn.style.display = 'none';
         if (clearBtn) clearBtn.style.display = 'none';
+        if (resultShowcase) resultShowcase.classList.add('hidden');
         currentResult = ''; // Reset result buffer
         
         outputWindow.innerHTML = '<p class="placeholder-text" style="color: #94a3b8; font-style: italic;">Engaging ALVE Engine. Formalizing axioms, mapping state space, and deriving logical steps...</p>';
@@ -261,8 +362,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             const text = data.choices[0].delta?.content || '';
                             result += text;
                             
-                            // Render Markdown live with a typing cursor
-                            outputWindow.innerHTML = marked.parse(result + ' <span style="color: #6366f1; animation: pulse 1s infinite;">▊</span>');
+                            // Render Markdown live with KaTeX and typing cursor
+                            outputWindow.innerHTML = renderMarkdownWithMath(result + ' <span style="color: #6366f1; animation: pulse 1s infinite;">▊</span>');
+                            updateResultShowcase(result);
                         } catch (e) {
                             // Silently ignore incomplete JSON chunks
                         }
@@ -270,12 +372,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Remove cursor and do final render
-            outputWindow.innerHTML = marked.parse(result);
+            // Remove cursor and do final complete render
+            outputWindow.innerHTML = renderMarkdownWithMath(result);
+            updateResultShowcase(result);
 
-            // Trigger MathJax typeset promise
+            // Trigger fallback MathJax if present
             if (window.MathJax && window.MathJax.typesetPromise) {
-                MathJax.typesetPromise([outputWindow]).catch((err) => console.error('MathJax error:', err));
+                MathJax.typesetPromise([outputWindow, resultShowcase]).catch(() => {});
             }
 
             statusIndicator.textContent = `Verified (${usedModel})`;
