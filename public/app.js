@@ -6,16 +6,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnText = solveBtn.querySelector('.btn-text');
     const statusIndicator = document.getElementById('status-indicator');
     const copyBtn = document.getElementById('copy-btn');
+    const clearBtn = document.getElementById('clear-btn');
     const demoBtns = document.querySelectorAll('.demo-btn');
     const imageUpload = document.getElementById('image-upload');
     const imagePreviewContainer = document.getElementById('image-preview-container');
     const imagePreview = document.getElementById('image-preview');
     const removeImageBtn = document.getElementById('remove-image-btn');
+    const quotaCount = document.getElementById('quota-count');
+    const heroSection = document.getElementById('hero-section');
 
     let currentResult = ''; // Store the latest result for copying
     let currentBase64Image = null; // Store compressed image data
+    const DAILY_LIMIT = 3;
 
-    // Image Upload Handling & Compression
+    // --- Quota Display Helper ---
+    function updateQuotaDisplay() {
+        if (!quotaCount) return;
+        const today = new Date().toISOString().split('T')[0];
+        const usage = JSON.parse(localStorage.getItem('math_solver_usage') || '{"date":"","count":0}');
+        const count = usage.date === today ? usage.count : 0;
+        const remaining = Math.max(0, DAILY_LIMIT - count);
+        quotaCount.textContent = `${remaining}/${DAILY_LIMIT}`;
+        if (remaining === 0) {
+            quotaCount.style.color = '#f43f5e';
+        } else {
+            quotaCount.style.color = '#a5b4fc';
+        }
+    }
+    updateQuotaDisplay();
+
+    // --- Auto-Expanding Textarea (Chat-style) ---
+    function autoResizeTextarea() {
+        problemInput.style.height = 'auto';
+        problemInput.style.height = Math.min(problemInput.scrollHeight, 180) + 'px';
+    }
+    problemInput.addEventListener('input', autoResizeTextarea);
+
+    // --- Image Upload Handling & Compression ---
     if (imageUpload) {
         imageUpload.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -53,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentBase64Image = compressedDataUrl;
                     imagePreview.src = compressedDataUrl;
                     imagePreviewContainer.classList.remove('hidden');
+                    problemInput.focus();
                 };
                 img.src = event.target.result;
             };
@@ -69,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Demo Prompts Library
+    // --- Demo Prompts Library ---
     const prompts = {
         'River Crossing Puzzle': 'A farmer needs to cross a river with a wolf, a goat, and a box of math books. The boat can only hold the farmer and one item at a time. If left alone, the wolf will eat the goat. The goat cannot be left alone with the math books because it will chew them up. How does the farmer get everything across safely? Formalize the constraints, map out every single trip step-by-step, and mathematically verify that no forbidden states occur at any point.',
         'Calculus Proof': 'Prove that the derivative of e^x is e^x using the limit definition of a derivative. Be extremely rigorous and cite all algebraic limits.',
@@ -77,32 +105,59 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     demoBtns.forEach(btn => {
-        if (prompts[btn.textContent]) {
+        const titleEl = btn.querySelector('.card-title') || btn;
+        const key = titleEl.textContent.trim();
+        if (prompts[key]) {
             btn.addEventListener('click', () => {
-                problemInput.value = prompts[btn.textContent];
-                // Optional: Automatically click solve when a demo is clicked
-                // solveBtn.click();
+                problemInput.value = prompts[key];
+                autoResizeTextarea();
+                problemInput.focus();
             });
         }
     });
 
-    // Enter key to solve (Shift+Enter for new line)
+    // --- Enter Key to Submit (Shift+Enter for newline) ---
     problemInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault(); // Prevent default new line
+            e.preventDefault();
             solveBtn.click();
         }
     });
 
-    // Copy to Clipboard
-    copyBtn.addEventListener('click', () => {
-        if (!currentResult) return;
-        navigator.clipboard.writeText(currentResult).then(() => {
-            const originalText = copyBtn.textContent;
-            copyBtn.textContent = 'Copied!';
-            setTimeout(() => copyBtn.textContent = originalText, 2000);
+    // --- Copy to Clipboard ---
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            if (!currentResult) return;
+            navigator.clipboard.writeText(currentResult).then(() => {
+                const textSpan = copyBtn.querySelector('span');
+                const prev = textSpan ? textSpan.textContent : copyBtn.textContent;
+                if (textSpan) textSpan.textContent = 'Copied!';
+                else copyBtn.textContent = 'Copied!';
+                
+                setTimeout(() => {
+                    if (textSpan) textSpan.textContent = prev;
+                    else copyBtn.textContent = prev;
+                }, 2000);
+            });
         });
-    });
+    }
+
+    // --- Clear Output ---
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            currentResult = '';
+            outputWindow.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-glyph">&int;</div>
+                    <p>Logical derivations, mathematical proofs, and verification steps will stream here in real time.</p>
+                </div>
+            `;
+            statusIndicator.textContent = 'Ready';
+            statusIndicator.className = 'status-indicator';
+            copyBtn.style.display = 'none';
+            clearBtn.style.display = 'none';
+        });
+    }
 
     // Configure marked to handle Markdown formatting safely
     marked.setOptions({
@@ -110,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gfm: true
     });
 
+    // --- Solver Execution Flow ---
     solveBtn.addEventListener('click', async () => {
         const problem = problemInput.value.trim();
         
@@ -128,31 +184,35 @@ document.addEventListener('DOMContentLoaded', () => {
             usage = { date: today, count: 0 };
         }
         
-        if (usage.count >= 3) {
+        if (usage.count >= DAILY_LIMIT) {
             outputWindow.innerHTML = `
-                <div class="glass-panel" style="border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.1); padding: 1.5rem;">
-                    <h3 style="color: #ef4444; margin-bottom: 0.5rem; font-weight: 600; font-size: 1.1rem;">Daily demo threshold reached (3/3 queries used).</h3>
-                    <p style="color: var(--text-primary); line-height: 1.5;">To protect API resources, this public link limits requests to 3 per day.</p>
+                <div style="border: 1px solid rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.08); padding: 1.5rem; border-radius: 0.75rem;">
+                    <h3 style="color: #f43f5e; margin-bottom: 0.5rem; font-weight: 600; font-size: 1.1rem; border-left: none; padding-left: 0;">Daily Demo Threshold Reached (3/3 queries used)</h3>
+                    <p style="color: #cbd5e1; line-height: 1.6; margin-bottom: 0;">To protect financial API resources, this public solver demo limits anonymous requests to 3 per calendar day. Access resets automatically at midnight.</p>
                 </div>
             `;
             statusIndicator.textContent = 'Limit Reached';
             statusIndicator.className = 'status-indicator';
+            updateQuotaDisplay();
             return;
         }
 
         usage.count += 1;
         localStorage.setItem('math_solver_usage', JSON.stringify(usage));
+        updateQuotaDisplay();
         // ----------------------------------------
 
+        // UI Loading State
         solveBtn.disabled = true;
         spinner.classList.remove('hidden');
-        btnText.textContent = 'Computing...';
-        statusIndicator.textContent = 'Computing';
+        btnText.style.display = 'none';
+        statusIndicator.textContent = 'Deriving Proof...';
         statusIndicator.className = 'status-indicator computing';
-        copyBtn.style.display = 'none'; // Hide copy button while computing
+        if (copyBtn) copyBtn.style.display = 'none';
+        if (clearBtn) clearBtn.style.display = 'none';
         currentResult = ''; // Reset result buffer
         
-        outputWindow.innerHTML = '<p class="placeholder-text">Analyzing logical structure and deriving proof...</p>';
+        outputWindow.innerHTML = '<p class="placeholder-text" style="color: #94a3b8; font-style: italic;">Engaging ALVE Engine. Formalizing axioms, mapping state space, and deriving logical steps...</p>';
 
         try {
             // Trigger API request
@@ -183,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let buffer = '';
             let usedModel = 'OpenRouter'; // Track which model was actually used
             
-            outputWindow.innerHTML = '<p class="placeholder-text">Starting derivation...</p>';
+            outputWindow.innerHTML = '<p class="placeholder-text" style="color: #94a3b8; font-style: italic;">Beginning formal derivation stream...</p>';
 
             while (true) {
                 const { done, value } = await reader.read();
@@ -197,12 +257,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (line.startsWith('data: ') && !line.includes('[DONE]')) {
                         try {
                             const data = JSON.parse(line.slice(6));
-                            if (data.model) usedModel = data.model; // Extract the actual model name
+                            if (data.model) usedModel = data.model; // Extract model name
                             const text = data.choices[0].delta?.content || '';
                             result += text;
                             
                             // Render Markdown live with a typing cursor
-                            outputWindow.innerHTML = marked.parse(result + ' ▊');
+                            outputWindow.innerHTML = marked.parse(result + ' <span style="color: #6366f1; animation: pulse 1s infinite;">▊</span>');
                         } catch (e) {
                             // Silently ignore incomplete JSON chunks
                         }
@@ -213,8 +273,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Remove cursor and do final render
             outputWindow.innerHTML = marked.parse(result);
 
-            // Trigger MathJax only AFTER the stream finishes to prevent lag/flickering
-            if (window.MathJax) {
+            // Trigger MathJax typeset promise
+            if (window.MathJax && window.MathJax.typesetPromise) {
                 MathJax.typesetPromise([outputWindow]).catch((err) => console.error('MathJax error:', err));
             }
 
@@ -222,24 +282,30 @@ document.addEventListener('DOMContentLoaded', () => {
             statusIndicator.title = `Model used: ${usedModel}`;
             statusIndicator.className = 'status-indicator done';
             
-            // Show the copy button now that the stream is finished
-            copyBtn.style.display = 'block';
+            // Show action buttons now that stream has completed
+            if (copyBtn) copyBtn.style.display = 'inline-flex';
+            if (clearBtn) clearBtn.style.display = 'inline-flex';
             currentResult = result;
 
+            // Clear input after successful send
+            problemInput.value = '';
+            autoResizeTextarea();
+            if (currentBase64Image && removeImageBtn) {
+                removeImageBtn.click();
+            }
+
         } catch (error) {
-            outputWindow.innerHTML = `<p style="color: #ef4444;">Error during computation: ${error.message}</p>`;
+            outputWindow.innerHTML = `
+                <div style="border: 1px solid rgba(244, 63, 94, 0.3); background: rgba(244, 63, 94, 0.06); padding: 1.25rem; border-radius: 0.75rem;">
+                    <p style="color: #f43f5e; margin: 0;">Error during computation: ${error.message}</p>
+                </div>
+            `;
             statusIndicator.textContent = 'Error';
             statusIndicator.className = 'status-indicator';
         } finally {
             solveBtn.disabled = false;
             spinner.classList.add('hidden');
-            btnText.textContent = 'Verify & Solve';
-        }
-    });
-
-    problemInput.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            solveBtn.click();
+            btnText.style.display = 'inline-flex';
         }
     });
 });

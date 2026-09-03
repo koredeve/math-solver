@@ -3,92 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absolute Logic - Math Solver</title>
-    <meta name="description" content="A strict mathematical logic and word problem solver.">
+    <title>MathSolverBot — Absolute Logic Verification Engine</title>
+    <meta name="description" content="Next-generation mathematical and logical reasoning AI engine powered by ALVE.">
     <link rel="stylesheet" href="style.css">
-    <!-- Modern Typography: Inter for UI, Fira Code for math/code -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Modern Typography: Inter & JetBrains Mono / Fira Code -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Marked.js for Markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
     <!-- MathJax for rendering LaTeX math formulas -->
     <script>
         MathJax = {
             tex: {
                 inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
             },
             svg: {
                 fontCache: 'global'
+            },
+            options: {
+                renderActions: {
+                    addMenu: []
+                }
             }
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
-    <div class="background-effects">
-        <div class="glow-orb orb-1"></div>
-        <div class="glow-orb orb-2"></div>
-    </div>
+    <!-- Subtle Background Elements -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
 
-    <main class="app-container">
-        <header class="glass-panel">
-            <h1>Absolute Logic</h1>
-            <p>Rigorous step-by-step mathematical verification and solving engine.</p>
+    <div class="app-layout">
+        <!-- Top Navigation Bar -->
+        <header class="navbar">
+            <div class="nav-brand">
+                <div class="brand-glyph">
+                    <span>&forall;&exist;</span>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-name">MathSolverBot</span>
+                    <span class="brand-badge">ALVE v2.4</span>
+                </div>
+            </div>
+
+            <div class="nav-status">
+                <div class="status-chip mode-chip">
+                    <span class="status-dot green"></span>
+                    <span class="chip-text">Formal Proof Mode</span>
+                </div>
+                <div class="status-chip quota-chip" id="quota-display" title="Daily free access quota">
+                    <span class="chip-label">Daily Access:</span>
+                    <span class="chip-value" id="quota-count">3/3</span>
+                </div>
+            </div>
         </header>
 
-        <section class="input-section glass-panel">
-            <label for="problem-input" class="sr-only">Enter your mathematical problem</label>
-            <textarea id="problem-input" placeholder="Enter your word problem, theorem, or logic puzzle..." rows="5"></textarea>
+        <!-- Main Chat / Reasoning Stage -->
+        <main class="main-stage">
+            <!-- Hero / Welcome (Shown when idle) -->
+            <section class="hero-section" id="hero-section">
+                <div class="hero-pill">
+                    <span class="sparkle">✦</span> Model-Agnostic Theorem Prover
+                </div>
+                <h1 class="hero-title">Step-by-Step Logic &amp; Mathematical Verification</h1>
+                <p class="hero-subtitle">Enter word problems, discrete constraints, or snap a picture of whiteboard equations. Verified axiomatically without hallucinations.</p>
+
+                <!-- Inspiration / Prompt Cards -->
+                <div class="prompt-grid">
+                    <button class="prompt-card demo-btn" type="button">
+                        <div class="card-icon">🐺</div>
+                        <div class="card-content">
+                            <span class="card-title">River Crossing Puzzle</span>
+                            <span class="card-desc">State-space constraint satisfaction problem</span>
+                        </div>
+                    </button>
+
+                    <button class="prompt-card demo-btn" type="button">
+                        <div class="card-icon">∫dx</div>
+                        <div class="card-content">
+                            <span class="card-title">Calculus Proof</span>
+                            <span class="card-desc">Rigorous limit derivation of derivative of eˣ</span>
+                        </div>
+                    </button>
+
+                    <button class="prompt-card demo-btn" type="button">
+                        <div class="card-icon">⚖️</div>
+                        <div class="card-content">
+                            <span class="card-title">Hardest Logic Riddle</span>
+                            <span class="card-desc">Boolos' three gods (True, False, Random)</span>
+                        </div>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Output Stream Section -->
+            <section class="output-container" id="output-container">
+                <div class="output-card">
+                    <div class="output-card-header">
+                        <div class="engine-identity">
+                            <div class="engine-avatar">
+                                <span>λ</span>
+                            </div>
+                            <div class="engine-meta">
+                                <span class="engine-name">ALVE Engine</span>
+                                <span class="status-indicator" id="status-indicator">Ready</span>
+                            </div>
+                        </div>
+
+                        <div class="output-actions">
+                            <button id="copy-btn" class="action-btn copy-btn" style="display: none;" title="Copy markdown solution">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span>Copy Proof</span>
+                            </button>
+                            <button id="clear-btn" class="action-btn clear-btn" style="display: none;" title="Clear solution">
+                                <span>Clear</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="output-window" class="markdown-body">
+                        <div class="empty-state">
+                            <div class="empty-glyph">&int;</div>
+                            <p>Logical derivations, mathematical proofs, and verification steps will stream here in real time.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sponsor / Developer Ad (Sleek Carbon style) -->
+            <div class="ad-dock">
+                <div class="ad-card" id="carbonads-placeholder">
+                    <div class="ad-meta">
+                        <span class="ad-tag">SPONSORED</span>
+                        <span class="ad-note">Carbon Ads / Developer Network</span>
+                    </div>
+                    <p class="ad-copy">High-performance AI serverless infrastructure for mathematical operations.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Modern AI Chat Input Composer (Floating Dock) -->
+        <footer class="composer-wrapper">
+            <div class="composer-box">
+                <!-- Image Attachment Preview Chip -->
+                <div id="image-preview-container" class="preview-chip hidden">
+                    <div class="preview-thumb-wrap">
+                        <img id="image-preview" src="" alt="Attached mathematical formula">
+                    </div>
+                    <div class="preview-info">
+                        <span class="preview-name">Attached Equation / Photo</span>
+                        <span class="preview-sub">Ready for multimodal analysis</span>
+                    </div>
+                    <button id="remove-image-btn" class="preview-remove-btn" type="button" aria-label="Remove image">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+
+                <!-- Textarea -->
+                <div class="composer-input-row">
+                    <textarea 
+                        id="problem-input" 
+                        placeholder="Ask a mathematical question, describe a proof, or upload a problem image..." 
+                        rows="1" 
+                        autofocus></textarea>
+                </div>
+
+                <!-- Bottom Toolbar inside Composer -->
+                <div class="composer-toolbar">
+                    <div class="toolbar-left">
+                        <!-- Hidden file input -->
+                        <input type="file" id="image-upload" accept="image/*" class="sr-only">
+                        
+                        <!-- AI Chat style "+" Upload Button -->
+                        <label for="image-upload" class="attach-btn" title="Upload image or whiteboard equation" aria-label="Upload image">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </label>
+
+                        <div class="engine-badge-pill" title="Autonomous Logic Verification Engine">
+                            <span class="pill-dot"></span>
+                            <span>Strict Verification</span>
+                        </div>
+                    </div>
+
+                    <div class="toolbar-right">
+                        <span class="key-hint">Enter to solve &bull; Shift+Enter for newline</span>
+                        
+                        <!-- Submit Action Button -->
+                        <button id="solve-btn" class="send-btn" type="button" aria-label="Send equation to solver">
+                            <span class="btn-text">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="19" x2="12" y2="5"></line>
+                                    <polyline points="5 12 12 5 19 12"></polyline>
+                                </svg>
+                            </span>
+                            <span class="spinner hidden" id="loading-spinner"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
             
-            <!-- Image Upload UI -->
-            <div class="upload-container">
-                <input type="file" id="image-upload" accept="image/*" class="sr-only">
-                <label for="image-upload" class="demo-btn upload-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: middle;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                    Upload Image
-                </label>
-                <div id="image-preview-container" class="hidden">
-                    <img id="image-preview" src="" alt="Selected image">
-                    <button id="remove-image-btn" class="remove-btn" title="Remove image">×</button>
-                </div>
+            <div class="composer-disclaimer">
+                <span>Deterministic mathematical derivations powered by OpenRouter Edge Streaming. All answers verified by strict state-machine derivation.</span>
             </div>
-
-            <div class="demo-prompts">
-                <button class="demo-btn">River Crossing Puzzle</button>
-                <button class="demo-btn">Calculus Proof</button>
-                <button class="demo-btn">Hardest Logic Riddle</button>
-            </div>
-
-            <div class="actions">
-                <button id="solve-btn" class="primary-btn">
-                    <span class="btn-text">Verify & Solve</span>
-                    <span class="spinner hidden" id="loading-spinner"></span>
-                </button>
-            </div>
-        </section>
-
-        <!-- Ad Placement / Carbon Ads -->
-        <section class="ad-container glass-panel">
-            <div id="carbonads-placeholder">
-                <span class="ad-label">Advertisement</span>
-                <p style="margin-bottom: 0.25rem; color: var(--text-primary); font-weight: 500;">Premium Developer Ad Placement</p>
-                <p style="font-size: 0.75rem; color: var(--text-secondary);">(Carbon Ads or AdSense will render here)</p>
-            </div>
-        </section>
-
-        <section class="output-section glass-panel">
-            <div class="output-header">
-                <h2>Logical Derivation</h2>
-                <div style="display: flex; gap: 0.75rem; align-items: center;">
-                    <button id="copy-btn" class="demo-btn" style="display: none;">Copy Solution</button>
-                    <div class="status-indicator" id="status-indicator">Idle</div>
-                </div>
-            </div>
-            <div id="output-window" class="markdown-body">
-                <p class="placeholder-text">Awaiting input. The logical derivation will appear here...</p>
-            </div>
-        </section>
-    </main>
+        </footer>
+    </div>
 
     <script src="app.js"></script>
 </body>
