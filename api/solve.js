@@ -74,7 +74,7 @@ $$[Formal mathematical formulation]$$
       userContent.push({ type: "image_url", image_url: { url: image } });
     }
 
-    // 100% Free Model Fallback Chain (Zero OpenRouter credits required)
+    // 100% Free Model Fallback Chain (Requires $0.00 credits on OpenRouter)
     const freeModels = image
       ? [
           'openrouter/free',
@@ -105,7 +105,6 @@ $$[Formal mathematical formulation]$$
           },
           body: JSON.stringify({
             model: modelCandidate,
-            models: freeModels,
             messages: [
               { role: 'system', content: systemPrompt },
               { role: 'user', content: userContent }
