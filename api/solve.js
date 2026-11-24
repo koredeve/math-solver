@@ -63,51 +63,85 @@ $$[Formal mathematical formulation]$$
 
 **BEGIN PROCESSING.**`;
 
-
     const userContent = [];
     if (problem) {
-        userContent.push({ type: "text", text: problem });
+      userContent.push({ type: "text", text: problem });
     } else if (image) {
-        userContent.push({ type: "text", text: "Please carefully analyze and mathematically solve the problem presented in this image. Proceed step-by-step." });
+      userContent.push({ type: "text", text: "Please carefully analyze and mathematically solve the problem presented in this image. Proceed step-by-step." });
     }
 
     if (image) {
-        userContent.push({ type: "image_url", image_url: { url: image } });
+      userContent.push({ type: "image_url", image_url: { url: image } });
     }
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'openrouter/auto-beta',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userContent }
-        ],
-        temperature: 0.1,
-        stream: true // Enable streaming to bypass Vercel timeouts
-      }),
-    });
+    // 100% Free Model Fallback Chain (Zero OpenRouter credits required)
+    const freeModels = image
+      ? [
+          'openrouter/free',
+          'nvidia/nemotron-3.5-super-vl:free',
+          'inclusionai/ling-3.2-flash:free'
+        ]
+      : [
+          'openrouter/free',
+          'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+          'google/gemma-4-31b-it:free',
+          'nvidia/nemotron-3-ultra-550b-a55b:free',
+          'google/gemma-4-26b-a4b-it:free',
+          'baidu/ernie-5.5-flash-preview:free'
+        ];
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenRouter API Error:', errorText);
-      return new Response(JSON.stringify({ error: `Failed to fetch from OpenRouter: ${errorText.substring(0, 100)}` }), {
-        status: response.status, headers: { 'Content-Type': 'application/json' },
-      });
+    let lastError = null;
+
+    // Iterate through free models in sequence until a stream successfully starts
+    for (const modelCandidate of freeModels) {
+      try {
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+            'HTTP-Referer': 'https://mathsolverbot.vercel.app',
+            'X-Title': 'MathSolverBot',
+          },
+          body: JSON.stringify({
+            model: modelCandidate,
+            models: freeModels,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userContent }
+            ],
+            temperature: 0.1,
+            stream: true // Enable streaming to bypass Vercel timeouts
+          }),
+        });
+
+        if (response.ok) {
+          // Return the stream directly to the client
+          return new Response(response.body, {
+            status: 200,
+            headers: { 
+              'Content-Type': 'text/event-stream',
+              'Cache-Control': 'no-cache',
+              'Connection': 'keep-alive'
+            },
+          });
+        }
+
+        const errorText = await response.text();
+        console.warn(`Model ${modelCandidate} failed (${response.status}): ${errorText.substring(0, 120)}`);
+        lastError = `Model ${modelCandidate} error (${response.status}): ${errorText.substring(0, 100)}`;
+      } catch (err) {
+        console.warn(`Network error querying ${modelCandidate}:`, err.message);
+        lastError = err.message;
+      }
     }
 
-    // Return the stream directly to the client
-    return new Response(response.body, {
-      status: 200,
-      headers: { 
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
-      },
+    // All free candidates exhausted
+    return new Response(JSON.stringify({ 
+      error: `Free routing failed: ${lastError}` 
+    }), {
+      status: 502,
+      headers: { 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
