@@ -176,28 +176,28 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 1. Extract and protect display math $$...$$
         let processed = markdownText.replace(/\$\$([\s\S]*?)\$\$/g, (match, math) => {
-            const id = `___MATH_BLOCK_${mathBlocks.length}___`;
+            const id = `%%MATH_BLOCK_${mathBlocks.length}%%`;
             mathBlocks.push({ id, math: math.trim(), display: true });
             return `\n\n${id}\n\n`;
         });
 
         // 2. Extract and protect display math \[...\]
         processed = processed.replace(/\\\[([\s\S]*?)\\\]/g, (match, math) => {
-            const id = `___MATH_BLOCK_${mathBlocks.length}___`;
+            const id = `%%MATH_BLOCK_${mathBlocks.length}%%`;
             mathBlocks.push({ id, math: math.trim(), display: true });
             return `\n\n${id}\n\n`;
         });
 
         // 3. Extract and protect inline math $...$
         processed = processed.replace(/(?<!\\)\$([^\$\n]+?)(?<!\\)\$/g, (match, math) => {
-            const id = `___MATH_INLINE_${mathBlocks.length}___`;
+            const id = `%%MATH_INLINE_${mathBlocks.length}%%`;
             mathBlocks.push({ id, math: math.trim(), display: false });
             return id;
         });
 
         // 4. Extract and protect inline math \(...\)
         processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (match, math) => {
-            const id = `___MATH_INLINE_${mathBlocks.length}___`;
+            const id = `%%MATH_INLINE_${mathBlocks.length}%%`;
             mathBlocks.push({ id, math: math.trim(), display: false });
             return id;
         });
