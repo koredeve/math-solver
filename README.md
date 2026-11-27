@@ -25,7 +25,21 @@ cd math-solver
 # Run automated unit & rubric tests (Node 20+)
 npm test
 
+# Run live ALVE benchmark against deployed endpoint
+EVAL_LIMIT=5 node benchmarks/run_live_eval.mjs
+
 # Run locally with Vercel CLI
 echo "OPENROUTER_API_KEY=sk-or-v1-xxxxxx" > .env
 vercel dev
 ```
+
+## Live ALVE Benchmark Sample (Observed on `mathsolverbot.vercel.app`)
+Running `EVAL_LIMIT=5 node benchmarks/run_live_eval.mjs` against the live free OpenRouter tier yielded **87/100 average rubric score** (**3/5 full 4-phase passes**; both non-passing items were `liquid/lfm-3-1.7b:free` skipping Phase 2):
+
+| ID | Category | Routed Free Model | Latency | Rubric Score | Passed |
+|---|---|---|---|---|---|
+| `alg-01` | Algebra domain trap | `liquid/lfm-3-1.7b:free` | 25.8s | 70/100 | No |
+| `alg-02` | Quadratic roots | `particle-ai/particle-1:free` | **5.3s** | **100/100** | **Yes** |
+| `alg-03` | Rational inequality | `liquid/lfm-3-1.7b:free` | 37.2s | 65/100 | No |
+| `calc-01` | Trigonometric limit | `nvidia/nemotron-3-ultra-550b-a55b:free` | 29.0s | **100/100** | **Yes** |
+| `calc-02` | Quadratic optimization | `recursive/flint-v1.0:free` | 21.7s | **100/100** | **Yes** |

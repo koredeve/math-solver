@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnText = solveBtn.querySelector('.btn-text');
     const statusIndicator = document.getElementById('status-indicator');
     const copyBtn = document.getElementById('copy-btn');
+    const printBtn = document.getElementById('print-btn');
     const clearBtn = document.getElementById('clear-btn');
     const demoBtns = document.querySelectorAll('.demo-btn');
     const imageUpload = document.getElementById('image-upload');
@@ -102,7 +103,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const prompts = {
         'River Crossing Puzzle': 'A farmer needs to cross a river with a wolf, a goat, and a box of math books. The boat can only hold the farmer and one item at a time. If left alone, the wolf will eat the goat. The goat cannot be left alone with the math books because it will chew them up. How does the farmer get everything across safely? Formalize the constraints, map out every single trip step-by-step, and mathematically verify that no forbidden states occur at any point.',
         'Calculus Proof': 'Prove that the derivative of e^x is e^x using the limit definition of a derivative. Be extremely rigorous and cite all algebraic limits.',
-        'Hardest Logic Riddle': 'There are three gods A, B, and C, who are called, in no particular order, True, False, and Random. True always speaks truly, False always speaks falsely, but whether Random speaks truly or falsely is a completely random coin toss. Determine the identities of A, B, and C by asking exactly three yes-no questions.'
+        'Hardest Logic Riddle': 'There are three gods A, B, and C, who are called, in no particular order, True, False, and Random. True always speaks truly, False always speaks falsely, but whether Random speaks truly or falsely is a completely random coin toss. Determine the identities of A, B, and C by asking exactly three yes-no questions.',
+        'WAEC / Exam Domain Trap': 'Solve for all real values of x: sqrt(x + 3) = x - 3. Explicitly verify domain restrictions and reject any extraneous roots.'
     };
 
     demoBtns.forEach(btn => {
@@ -143,6 +145,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Export PDF / Print ---
+    if (printBtn) {
+        printBtn.addEventListener('click', () => {
+            if (!currentResult) return;
+            window.print();
+        });
+    }
+
     // --- Clear Output ---
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
@@ -158,6 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
             statusIndicator.textContent = 'Ready';
             statusIndicator.className = 'status-indicator';
             copyBtn.style.display = 'none';
+            if (printBtn) printBtn.style.display = 'none';
             clearBtn.style.display = 'none';
         });
     }
@@ -309,6 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statusIndicator.textContent = 'Deriving Proof...';
         statusIndicator.className = 'status-indicator computing';
         if (copyBtn) copyBtn.style.display = 'none';
+        if (printBtn) printBtn.style.display = 'none';
         if (clearBtn) clearBtn.style.display = 'none';
         if (resultShowcase) resultShowcase.classList.add('hidden');
         currentResult = ''; // Reset result buffer
@@ -411,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Show action buttons now that stream has completed
             if (copyBtn) copyBtn.style.display = 'inline-flex';
+            if (printBtn) printBtn.style.display = 'inline-flex';
             if (clearBtn) clearBtn.style.display = 'inline-flex';
             currentResult = result;
 
