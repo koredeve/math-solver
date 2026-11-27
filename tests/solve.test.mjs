@@ -56,10 +56,10 @@ test('streams 200 SSE response for text problem and enforces temperature 0.1', a
     assert.equal(res.status, 200);
     assert.equal(res.headers.get('Content-Type'), 'text/event-stream');
     assert.equal(capturedBody.temperature, 0.1);
-    assert.equal(capturedBody.max_tokens, 1500);
+    assert.equal(capturedBody.max_tokens, 3000);
     assert.deepEqual(capturedBody.reasoning, { effort: 'low' });
     assert.equal(capturedBody.stream, true);
-    assert.equal(capturedBody.model, 'google/gemma-4-26b-a4b-it:free');
+    assert.equal(capturedBody.model, 'openrouter/free');
     assert.equal(capturedBody.messages[1].content[0].text, 'Solve x + 1 = 2');
   } finally {
     globalThis.fetch = prevFetch;
@@ -88,7 +88,7 @@ test('routes image requests to vision model chain with image_url payload', async
   try {
     const res = await handler(makeRequest('POST', { image: 'data:image/jpeg;base64,abc' }));
     assert.equal(res.status, 200);
-    assert.deepEqual(triedModels, ['nvidia/nemotron-3.5-super-vl:free', 'inclusionai/ling-3.2-flash:free']);
+    assert.deepEqual(triedModels, ['openrouter/free', 'nvidia/nemotron-3.5-super-vl:free']);
     assert.equal(capturedContent.some((c) => c.type === 'image_url'), true);
   } finally {
     globalThis.fetch = prevFetch;
