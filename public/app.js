@@ -343,6 +343,20 @@ document.addEventListener('DOMContentLoaded', () => {
             let result = '';
             let buffer = '';
             let usedModel = 'OpenRouter'; // Track which model was actually used
+            let renderTimer = null;
+            let lastRenderTime = 0;
+
+            const scheduleStreamRender = () => {
+                if (renderTimer !== null) return;
+                const now = performance.now();
+                const delay = Math.max(0, 80 - (now - lastRenderTime));
+                renderTimer = setTimeout(() => {
+                    renderTimer = null;
+                    lastRenderTime = performance.now();
+                    outputWindow.innerHTML = renderMarkdownWithMath(result + ' <span style="color: #6366f1; animation: pulse 1s infinite;">▊</span>');
+                    updateResultShowcase(result);
+                }, delay);
+            };
             
             outputWindow.innerHTML = '<p class="placeholder-text" style="color: #94a3b8; font-style: italic;">Beginning formal derivation stream...</p>';
 
@@ -354,25 +368,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 const lines = buffer.split('\n');
                 buffer = lines.pop(); // keep the last potentially incomplete line in the buffer
                 
+                let chunkAdded = false;
                 for (const line of lines) {
                     if (line.startsWith('data: ') && !line.includes('[DONE]')) {
                         try {
                             const data = JSON.parse(line.slice(6));
                             if (data.model) usedModel = data.model; // Extract model name
                             const text = data.choices[0].delta?.content || '';
-                            result += text;
-                            
-                            // Render Markdown live with KaTeX and typing cursor
-                            outputWindow.innerHTML = renderMarkdownWithMath(result + ' <span style="color: #6366f1; animation: pulse 1s infinite;">▊</span>');
-                            updateResultShowcase(result);
+                            if (text) {
+                                result += text;
+                                chunkAdded = true;
+                            }
                         } catch (e) {
                             // Silently ignore incomplete JSON chunks
                         }
                     }
                 }
+                if (chunkAdded) {
+                    scheduleStreamRender();
+                }
             }
 
-            // Remove cursor and do final complete render
+            // Cancel any pending throttled render, remove cursor, and do final complete render
+            if (renderTimer !== null) {
+                clearTimeout(renderTimer);
+                renderTimer = null;
+            }
             outputWindow.innerHTML = renderMarkdownWithMath(result);
             updateResultShowcase(result);
 

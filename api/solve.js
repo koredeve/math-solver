@@ -74,19 +74,19 @@ $$[Formal mathematical formulation]$$
       userContent.push({ type: "image_url", image_url: { url: image } });
     }
 
-    // 100% Free Model Fallback Chain (Requires $0.00 credits on OpenRouter)
+    // 100% Free Model Fallback Chain (Fastest instruction-followers first; openrouter/free as auto-fallback)
     const freeModels = image
       ? [
-          'openrouter/free',
           'nvidia/nemotron-3.5-super-vl:free',
-          'inclusionai/ling-3.2-flash:free'
+          'inclusionai/ling-3.2-flash:free',
+          'openrouter/free'
         ]
       : [
-          'openrouter/free',
-          'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-          'google/gemma-4-31b-it:free',
-          'nvidia/nemotron-3-ultra-550b-a55b:free',
           'google/gemma-4-26b-a4b-it:free',
+          'google/gemma-4-31b-it:free',
+          'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+          'openrouter/free',
+          'nvidia/nemotron-3-ultra-550b-a55b:free',
           'baidu/ernie-5.5-flash-preview:free'
         ];
 
@@ -110,6 +110,8 @@ $$[Formal mathematical formulation]$$
               { role: 'user', content: userContent }
             ],
             temperature: 0.1,
+            max_tokens: 1500,
+            reasoning: { effort: 'low' },
             stream: true // Enable streaming to bypass Vercel timeouts
           }),
         });
