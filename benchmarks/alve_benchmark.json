@@ -1,0 +1,107 @@
+[
+  {
+    "id": "alg-01",
+    "category": "algebra-domain-trap",
+    "prompt": "Solve for real x: sqrt(x + 3) = x - 3.",
+    "expectUnsolvable": false,
+    "expectedAnswer": "x = 6"
+  },
+  {
+    "id": "alg-02",
+    "category": "algebra-quadratic",
+    "prompt": "Find all real values of x satisfying 2x^2 - 5x - 3 = 0.",
+    "expectUnsolvable": false,
+    "expectedAnswer": "x = 3 or x = -1/2"
+  },
+  {
+    "id": "alg-03",
+    "category": "algebra-inequality",
+    "prompt": "Solve the inequality (x - 2)/(x + 1) >= 0 for real x.",
+    "expectUnsolvable": false,
+    "expectedAnswer": "x < -1 or x >= 2"
+  },
+  {
+    "id": "calc-01",
+    "category": "calculus-limit",
+    "prompt": "Evaluate lim_{x -> 0} (sin(3x)) / (5x).",
+    "expectUnsolvable": false,
+    "expectedAnswer": "3/5"
+  },
+  {
+    "id": "calc-02",
+    "category": "calculus-optimization",
+    "prompt": "Find the minimum value of f(x) = x^2 - 6x + 13 for real x.",
+    "expectUnsolvable": false,
+    "expectedAnswer": "4 (at x = 3)"
+  },
+  {
+    "id": "calc-03",
+    "category": "calculus-integral",
+    "prompt": "Compute the definite integral from 0 to 2 of (3x^2 + 2x) dx.",
+    "expectUnsolvable": false,
+    "expectedAnswer": "12"
+  },
+  {
+    "id": "disc-01",
+    "category": "discrete-combinatorics",
+    "prompt": "How many 4-digit even integers can be formed using the digits {1, 2, 3, 4, 5} without repetition?",
+    "expectUnsolvable": false,
+    "expectedAnswer": "48"
+  },
+  {
+    "id": "disc-02",
+    "category": "discrete-number-theory",
+    "prompt": "Find the remainder when 7^100 is divided by 5.",
+    "expectUnsolvable": false,
+    "expectedAnswer": "1"
+  },
+  {
+    "id": "disc-03",
+    "category": "discrete-logic",
+    "prompt": "Prove or disprove: If n^2 is even for an integer n, then n is even.",
+    "expectUnsolvable": false,
+    "expectedAnswer": "True (proved by contrapositive)"
+  },
+  {
+    "id": "prob-01",
+    "category": "probability-conditional",
+    "prompt": "A fair 6-sided die is rolled. Given that the outcome is greater than 2, what is the probability that it is even?",
+    "expectUnsolvable": false,
+    "expectedAnswer": "1/2"
+  },
+  {
+    "id": "prob-02",
+    "category": "probability-bayes",
+    "prompt": "Box A has 2 red and 3 blue balls. Box B has 4 red and 1 blue ball. A box is chosen uniformly at random and one ball is drawn, which is red. What is the probability it came from Box B?",
+    "expectUnsolvable": false,
+    "expectedAnswer": "2/3"
+  },
+  {
+    "id": "linalg-01",
+    "category": "linear-algebra",
+    "prompt": "Find the determinant and inverse of the matrix [[2, 1], [5, 3]].",
+    "expectUnsolvable": false,
+    "expectedAnswer": "det = 1; inverse = [[3, -1], [-5, 2]]"
+  },
+  {
+    "id": "trap-01",
+    "category": "unsolvable-inconsistent",
+    "prompt": "Find real numbers x and y such that x + y = 5 and 2x + 2y = 12.",
+    "expectUnsolvable": true,
+    "expectedAnswer": "Inconsistent system (no solution)"
+  },
+  {
+    "id": "trap-02",
+    "category": "unsolvable-domain",
+    "prompt": "Find all real numbers x such that x^2 + 4x + 5 = 0.",
+    "expectUnsolvable": true,
+    "expectedAnswer": "No real solution (discriminant = -4 < 0)"
+  },
+  {
+    "id": "trap-03",
+    "category": "unsolvable-insufficient-info",
+    "prompt": "A rectangle has perimeter 20 cm. Determine its exact area in square centimeters.",
+    "expectUnsolvable": true,
+    "expectedAnswer": "Insufficient information (area depends on side lengths)"
+  }
+]
