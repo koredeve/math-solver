@@ -402,7 +402,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 MathJax.typesetPromise([outputWindow, resultShowcase]).catch(() => {});
             }
 
-            statusIndicator.textContent = `Verified (${usedModel})`;
+            const shortModel = usedModel
+                .replace(/^[^/]+\//, '')
+                .replace(/:free$/, '');
+            statusIndicator.textContent = usedModel === 'OpenRouter' ? 'Verified' : `Verified · ${shortModel}`;
             statusIndicator.title = `Model used: ${usedModel}`;
             statusIndicator.className = 'status-indicator done';
             
