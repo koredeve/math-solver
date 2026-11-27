@@ -251,15 +251,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const phase4Match = text.match(/###\s*PHASE\s*4[^\n]*\n([\s\S]*)/i);
         if (phase4Match && phase4Match[1]) {
             let content = phase4Match[1].trim();
-            // Remove trailing rules or notes
+            // Remove trailing rules or notes and stray leading bold markers
             content = content.replace(/\*\*CRITICAL RULES[\s\S]*/i, '').trim();
+            content = content.replace(/^\*{1,2}\s+(?=\S)/, '').trim();
             return content;
         }
 
         // Search for explicit FINAL ANSWER / RESULT callouts
-        const finalAnswerMatch = text.match(/(?:>|\*\*|\b)(?:FINAL\s*(?:ANSWER|RESULT|CONCLUSION))\s*:\s*([\s\S]*)/i);
+        const finalAnswerMatch = text.match(/(?:>|\*\*|\b)(?:FINAL\s*(?:ANSWER|RESULT|CONCLUSION))\s*:\s*\*?\*?\s*([\s\S]*)/i);
         if (finalAnswerMatch && finalAnswerMatch[1]) {
-            return finalAnswerMatch[1].trim();
+            return finalAnswerMatch[1].replace(/^\*{1,2}\s+(?=\S)/, '').trim();
         }
 
         return null;
